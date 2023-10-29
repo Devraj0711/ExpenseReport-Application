@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title id="pageTitle">Default Title</title>
+    <!-- <link rel="stylesheet" href="/css/forms.css">
+    <link rel="stylesheet" href="/css/product.css"> -->
+    <style>
+        .included-content {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .included-content object {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <div class="included-content">
+        <object type="text/html" data="../includes/head.html"></object>
+    </div>
+
+    <div class="included-content">
+        <iframe src="../includes/navigation.html" width="100%" height="500px"></iframe>
+         <object type="text/html" data="../includes/navigation.html"></object> -->
+    <!-- </div>
+
+    <main>
+        Main content goes here -->
+    <!-- </main>
+
+    <div class="included-content">
+        <object type="text/html" data="../includes/end.html"></object>
+    </div> -->
+    <form class="expense-form" action="/Home/signup.html" onsubmit="handleLoginFormSubmission(event)" id="signupForm"  method="POST">
+    <div class="sigin">
+        <label for="Username">Username</label>
+        <input type="text" name="Username" id="Username" required>
+
+        <label for="Email">Email</label>
+        <input type="text" name="Email" id="Email" required>
+
+        <label for="Password">Enter Password</label>
+        <input name="Password" id="Password" required>
+        <button class="btn" type="submit">Signup</button>
+    </br>
+    </div>
+     </form>
+      
+     <form class="expense-sigin" action="/Home/signin" id="signinForm" method="GET">
+        <br></br>
+        <label for="sigin">Already a User =></label>
+        <button class="btn" type="submit" id="sigin">Signin</button>
+     </form>
+
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.4.1/axios.min.js" integrity="sha512-Fh/JL4KFgbH0OFN4EMEOvk90MTCjVuTVGFRDc+Kh5PyUFOzSzn/KA6PTOSNywfm5Ruppr40Uj09oGuj5tn6jiQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+     <script>
+         window.onload = function() {
+             // Get data from the server or determine it dynamically
+             var pageTitle = "Create Account";  // Replace this with the actual title
+             var path = "/Home/signup";  // Replace this with the actual path
+ 
+             // Set the page title
+             document.title = pageTitle;
+ 
+             // Set other dynamic content as needed
+             // ...
+
+         }
+
+         function handleLoginFormSubmission(e) {
+                e.preventDefault(); 
+                console.log(e.target.name);
+                const loginDetails ={
+                    Username: e.target.Username.value,
+                    Email: e.target.Email.value,
+                    Password: e.target.Password.value
+                }
+                console.log(loginDetails);
+               axios.post('http://localhost:2000/Home/signup', loginDetails)
+               .then(response => {
+                if(response.status === 200)
+                {
+                    alert(response.data.message);
+                    window.location.href = 'http://localhost:2000/Home/signin';  // this code redirects to the signin page after alert box display
+                }
+                
+               })
+               .catch(error => {
+                console.log(JSON.stringify(error));
+                console.log("eh");
+                document.body.innerHTML += '<div style="color:red;">' + error.data.message + '</div>';
+   
+               })
+            }; //end of function
+
+
+     </script>
+
+</body> 
+
+</html>

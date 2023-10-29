@@ -37,13 +37,14 @@
     <div class="included-content">
         <object type="text/html" data="../includes/end.html"></object>
     </div> -->
-    <form class="expense-form" action="/Home/signin" method="POST">
+    <main>
+    <form class="expense-form" id="loginForm"  onsubmit="handleLoginFormSubmission(event)">
     <div class="sigin">
         <label for="Username">Username</label>
-        <input type="text" name="Username" id="Username" required>
+        <input type="text" name="Username" id="Username" required/>
 
         <label for="Password">Enter Password</label>
-        <input type="password" name="Password" id="Password" required>
+        <input type="password" name="Password" id="Password" required/>
         <button class="btn" type="submit" >Signin</button>
 
     </div>
@@ -54,8 +55,10 @@
         <label for="sigup">Create an Account =></label>
         <button class="btn" type="submit" id="sigup">Signup</button>
      </form>
-
-     <script>
+    </main>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.4.1/axios.min.js" integrity="sha512-Fh/JL4KFgbH0OFN4EMEOvk90MTCjVuTVGFRDc+Kh5PyUFOzSzn/KA6PTOSNywfm5Ruppr40Uj09oGuj5tn6jiQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <script>
          window.onload = function() {
              // Get data from the server or determine it dynamically
              var pageTitle = "Login Page";  // Replace this with the actual title
@@ -64,80 +67,67 @@
              // Set the page title
              document.title = pageTitle;
 
+            } //end of function
+
+            function handleLoginFormSubmission(e) {
+                e.preventDefault(); 
+                console.log(e.target.name);
+                const loginDetails ={
+                    Username: e.target.Username.value,
+                    Password: e.target.Password.value
+                }
+                console.log(loginDetails);
+               axios.post('http://localhost:2000/Home/signin', loginDetails)
+               .then(response => {
+                if(response.status === 200)
+                {
+                    alert(response.data.message)
+                }
+                
+               })
+               .catch(error => {
+                console.log(JSON.stringify(error));
+                console.log("eh");
+                document.body.innerHTML += '<div style="color:red;">' + error.data.message + '</div>';
+   
+               })
             }; //end of function
-
-            document.addEventListener('DOMContentLoaded', (event) => {
-    const signinForm = document.querySelector('.expense-form');
-    signinForm.addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent the form from submitting in the traditional way
-
-        const usernameInput = document.getElementById('Username').value;
-        const passwordInput = document.getElementById('Password').value;
-
-        // Perform the API call here
-        fetch('/Home/signin', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                Username: usernameInput,
-                Password: passwordInput 
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message); 
-            } else {
-                alert(data.error); 
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-    });
-});
-
-
-            // function handleLoginFormSubmission(event) {
-            //     event.preventDefault(); 
-
- 
-            //     // Set other dynamic content as needed
-            //     // ...
-            //     const usernameInput = document.getElementById('Username').value;
-            //     console.log(usernameInput);
-            //     const passwordInput = document.getElementById('Password').value;
-            //     fetch('/Home/signin', {
-            //         method: 'POST',
-            //         headers: {
-            //             'Content-Type': 'application/json'
-            //         },
-            //             body: JSON.stringify({
-            //             Username: usernameInput,
-            //             Password: passwordInput 
-            //         })
-            //     })
-            //     .then(response => response.json())
-            //     .then(data => {
-            //         if (data.success) {
-            //             alert(data.message); 
-            //         } 
-            //         else {
-            //      // Login failed, show an error alert
-            //          alert(data.error); 
-            //      }
-            //     })
-            //     .catch(error => {
-            //         console.error('Error:', error);
-    
-            //      });
-         
-        // }; //end of function
 
      </script>
 
 </body> 
 
 </html>
+
+
+<!-- //             document.getElementById("loginForm").addEventListener("submit", function(event) {
+    //     event.preventDefault();
+    //     const formData = new FormData(this);
+    //     const Username = formData.get("Username");
+    //     const Password = formData.get("Password");
+    
+    //     // Make an AJAX request to the server
+    //     fetch("/Home/signin", {
+    //         method: "POST",
+    //         body: JSON.stringify({ Username, Password }),
+    //         headers: {
+    //             "Content-Type": "application/json"
+    //         }
+    //     })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         if (data.success) {
+    //             // Login successful, display success message
+    //             alert("Login successful: " + data.message);
+    //             // You can redirect the user to another page or perform other actions here
+    //         } else {
+    //             // Login failed, display error message
+    //             alert("Login failed: " + data.error);
+    //         }
+    //     })
+    //     .catch(error => {
+    //         // Handle network errors or other issues
+    //         console.error("Error:", error);
+    //         alert("An error occurred while processing your request. Please try again later.");
+    //     });
+    // }); -->

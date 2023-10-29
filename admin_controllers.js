@@ -2,6 +2,8 @@ const Home_page = require('../models/db_model');
 const path = require('path');
 const { Op } = require('sequelize');
 
+const bcrypt= require('bcrypt');
+
 //sigup page
 exports.getSignup = (req, res, next) => {
     Home_page.findAll()
@@ -16,7 +18,7 @@ exports.getSignup = (req, res, next) => {
 };
 
 exports.postAddDetails = (req, res, next) => {
-    console.log("post command");
+    console.log("post command", req.body);
 
     const Username = req.body.Username;
     const Email = req.body.Email;
@@ -34,24 +36,21 @@ exports.postAddDetails = (req, res, next) => {
         .then(existingUser => {
             if (existingUser) {
                 // Email already exists, return 403 Forbidden status
-                return res.status(403).alert(json({ error: 'Details already exists' }));
+                return res.status(403).json({ success:false, message: 'Details already exists' });
             } else {
-                // Email doesn't exist, create a new record
-                Home_page.create({
-                    Username: Username,
-                    Email: Email,
-                    Password: Password
+                const saltrounds= 10;
+                bcrypt.hash(Password, saltrounds, async(err, hash) =>{
+                    console.log(err)
+                    await Home_page.create({
+                        Username: Username,
+                        Email: Email,
+                        Password: hash
+                    })
+                    return res.status(200).json({ success: true, message: 'Sign up successful' }); // Redirect to a success page or wherever appropriate
                 })
-                .then(result => {
-                    console.log(result);
-                    res.redirect('/Home/signin'); // Redirect to a success page or wherever appropriate
-                })
-                .catch(err => {
-                    console.log(err);
-                    // Handle the error appropriately, e.g., send an error response or render an error page
-                });
-            }
-        })
+                
+        }
+    })
         .catch(err => {
             console.log(err);
             // Handle the error appropriately, e.g., send an error response or render an error page
@@ -88,33 +87,43 @@ exports.getSignin = (req, res, next) => {
 };
 
 exports.PostSignin = (req, res, next) => {
-    const Username = req.body.Username;
-    const Password = req.body.Password;
+    const {Username, Password }= req.body
+    console.log(req.body);
+
     console.log(Username);
     // Check if the username exists in the database
-    Home_page.findOne({
+    Home_page.findAll({
         where: {
             Username: Username
         }
     })
     .then(user => {
-        if (!user) {
-            // Username doesn't exist, return 401 Unauthorized status
-            return res.status(401).json({ success: false, error: 'Invalid username or password' });
+        if(user.length>0)
+        {
+        bcrypt.compare(Password, user[0].Password, (err, result)=>
+        {
+            if(err)
+            {
+                throw new Error('Something went wrong');
+            }
+            if(result=== true)
+            {
+                return res.status(200).json({ success: true, message: 'Login successful' });
+            }
+            else
+            {
+                return res.status(400).json({ success: false, message: 'Invalid username or password' });
+            }
+        })
         }
-
-        // If the username exists, check the password
-        if (user.Password !== Password) {
-            // Incorrect password, return 401 Unauthorized status
-            return res.status(401).json({ success: false, error: 'Invalid username or password' });
+        else
+        {
+            return res.status(404).json({ success: false, message: 'User doesnot exist' });
         }
-
-        // Username and password are correct, you can handle the success response here
-        res.status(200).json({ success: true, message: 'Login successful' });
     })
     .catch(err => {
         console.log(err);
         // Handle the error appropriately, e.g., send an error response or render an error page
-        res.status(500).json({success: false, error: 'Internal Server Error' });
+        res.status(500).json({success: false, message: 'Internal Server Error' });
     });
 };
