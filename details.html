@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title id="pageTitle">Default Title</title>
+    </head>
+
+<body>
+    <form class="product-form" id="myExpense" action="/Expense/details" method="POST">
+        <div class="form-control">
+            <label for="Amount">Enter Expense Amount:</label>
+            <input type="number" id="Amount" name="Amount" required>
+        
+            <label for="description">Choose Description:</label>
+            <textarea name="description" id="description" rows="5"></textarea>
+       
+            <label for="Category">Choose a Category:</label>
+            <select name="Category" id="Category">
+                <option value="movie">Movie</option>
+                <option value="fuel">Fuel</option>
+                <option value="food">Food</option>
+                <option value="shopping">Shopping</option>
+            </select>
+
+        <button class="btn" type="submit">Add Expense</button>
+        </div>
+
+        <div id="grand-element">
+            <ul id="listOfExpenses"></ul>
+        </div>
+    </form>
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.4.1/axios.min.js" integrity="sha512-Fh/JL4KFgbH0OFN4EMEOvk90MTCjVuTVGFRDc+Kh5PyUFOzSzn/KA6PTOSNywfm5Ruppr40Uj09oGuj5tn6jiQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <script>
+       
+         window.onload = function() {
+
+            console.log('Client-side JavaScript is running!');
+             // Get data from the server or determine it dynamically
+             var pageTitle = "Expense Page";  // Replace this with the actual title
+             var path = "/Expense/details";  // Replace this with the actual path
+ 
+             // Set the page title
+             document.title = pageTitle;
+
+       
+            
+           
+        
+
+            } //end of function
+
+            const myExpense= document.querySelector('#myExpense');
+            const item_Id= document.getElementById("listOfExpenses");
+
+            myExpense.addEventListener('submit', onSubmit);
+            
+
+            const Exp_Amt= document.getElementById('Amount');
+            const Exp_des= document.getElementById('description');
+            const Exp_categ= document.getElementById('Category');
+            
+            const GrandElement = document.getElementById("grand-element");
+            
+            // const childElement = document.createElement('li');
+            
+            function onSubmit(e){
+                e.preventDefault();
+                
+                axios.post('/Expense/details', {
+                Amount: Exp_Amt.value,
+                description: Exp_des.value,
+                Category: Exp_categ.value
+                })
+                .then(function (response) {
+                    const expenses = response.data.expenses;
+                    let parentElement = document.getElementById("listOfExpenses");
+                    expenses.forEach(expense => {
+                       
+                        showOnScreen(expense, parentElement);
+
+                        });
+                        // GrandElement.innerText=parentElement;
+                    })
+              
+                .catch(function (error) 
+                {
+                    console.error(error);
+                });
+            }
+                function showOnScreen(myobj, parentElement) 
+                {
+                    
+                   
+                    
+                    const childElement = document.createElement('li');
+                    
+                    childElement.textContent = myobj.Amount + ' - ' + myobj.description+ ' - ' + myobj.Category;
+                    const deleteButton = document.createElement('button');
+                    deleteButton.className = 'btn btn-danger btn-sm float-right delete';
+                    deleteButton.appendChild(document.createTextNode('Delete Expense'));
+                    const editButton = document.createElement('button');
+                    editButton.className = 'btn btn-primary btn-sm float-right edit';
+                    editButton.appendChild(document.createTextNode('Edit'));
+                    childElement.appendChild(editButton);
+                    childElement.appendChild(deleteButton);
+                    parentElement.appendChild(childElement);
+                    
+                    editButton.addEventListener('click', function (){
+                        
+                        parentElement.removeChild(childElement)
+                         document.getElementById('ExpAmt').value = myobj.my_amt;
+                         document.getElementById('Dsp').value = myobj.my_des;
+                         document.getElementById('Category').value = myobj.my_categ;
+                         });
+                        }
+
+     </script>
+
+</body> 
+
+</html>
+
