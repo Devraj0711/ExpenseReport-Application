@@ -25,6 +25,12 @@ const adminRoutes = require('./Expense_routes/admin_home');
 
 const detailRoutes= require('./Expense_routes/expense_route');
 
+const Home_page= require('./models/db_model');
+const Exp_page= require('./models/ExpenseDB');
+
+
+Exp_page.belongsTo(Home_page, {constraints:true, onDelete: 'CASCADE'});
+Home_page.hasMany(Exp_page);
 
 app.use(adminRoutes);
 
@@ -32,14 +38,25 @@ app.use(detailRoutes);
 
 app.use(errorController.get404);  
 
+
+
 //use of sequelize to carry on all the DB commands
+sequelize.sync() // Use { force: true } only during development to drop existing tables
+    .then(result => {
+        console.log('Tables synchronized successfully.');
+        app.listen(2000);
+    })
+    .catch(err => {
+        console.log('Error synchronizing tables:', err);
+    });
+
+// Enable Sequelize logging
 sequelize
-.sync()
-.then(result =>{
-    //console.log(result);
-    app.listen(2000);
-})
-.catch(err => {
-    console.log(err);
-});
+    .authenticate()
+    .then(() => {
+        console.log('Database connection established successfully.');
+    })
+    .catch(err => {
+        console.error('Unable to connect to the database:', err);
+    });
 

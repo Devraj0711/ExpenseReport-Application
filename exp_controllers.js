@@ -1,57 +1,43 @@
-const Exp_page = require('../models/ExpenseDB');
+const Home_page = require('../models/db_model'); // Adjust the path based on your project structure
+const Exp_page = require('../models/ExpenseDB'); // Adjust the path based on your project structure
+
+
 const path = require('path');
 const { Op } = require('sequelize');
-
+const fs = require('fs');
 const bcrypt= require('bcrypt');
 
-
-exports.getIndex = (req, res, next) => {
-  
+exports.getIndex=(req, res, next) => {
   Exp_page.findAll()
-    .then(rows => {
-      res.sendFile(path.join(__dirname, '..', 'views', 'Expense', 'details.html'));
-      console.log(rows);
+    .then(expense => {
+      const expenseData = JSON.stringify(expense);
+      console.log(expenseData);
+      res.render('expense/details', {
+        expense: expenseData,
+        pageTitle: 'All Products',
+        path: '/expense/details'
+      });
     })
-  // Exp_page.findAll()
-  // .then(expenses => {
-  //   const expensesJSON = JSON.stringify(expenses);
-  //   res.render('Expense/details', { expensesJSON: expensesJSON }); // Corrected path
-  // })
     .catch(err => {
-      console.error('Error fetching expenses: ', err);
-      res.status(500).json({ error: 'Internal server error' });
+      console.log(err);
     });
 }
-//     Exp_page.findAll()
-//     .then(rows => {
-//       res.sendFile(path.join(__dirname, '..', 'views', 'Expense', 'details.html'));
-//       console.log(rows);
-//     })
-//     .catch(err => {
-//       console.log(err);
-//       res.status(500).send('Internal Server Error');
-//     });
-// };
 
 exports.postIndex = (req, res, next) => {
-  const Amount = req.body.Amount;
-  const description = req.body.description;
-  const Category = req.body.Category;
-  console.log(" checking all the details", req.body);
+  const { Amount, description, Category } = req.body;
+  
   Exp_page.create({
     Amount: Amount,
     description: description,
-    Category: Category
+    Category: Category,
+    ExpenseReportId: req.user.id
   })
-  .then(result => {
-    // Fetch all the data from the database after insertion
-    Exp_page.findAll().then(expenses => {
-      res.status(200).json({ expenses: expenses }); // Send the expenses data as JSON response
-    });
+  .then(expenses => {
+    console.log(expenses);
+    return res.status(201).json({ expense: expenses, success: true });
   })
   .catch(err => {
     console.error('Error inserting data: ', err);
-    res.status(500).json({ error: 'Internal server error' }); // Handle the error appropriately
+    return res.status(500).json({ error: 'Internal Server Error', success: false });
   });
 };
-
