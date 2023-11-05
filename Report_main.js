@@ -25,16 +25,25 @@ const adminRoutes = require('./Expense_routes/admin_home');
 
 const detailRoutes= require('./Expense_routes/expense_route');
 
-const Home_page= require('./models/db_model');
-const Exp_page= require('./models/ExpenseDB');
+const purchaseRoutes= require('./Expense_routes/purchase_routes');
+
+const Home_page= require('./models/db_model'); // expenseReports
+const Exp_page= require('./models/ExpenseDB'); //details
+const Order=  require('./models/order');
+
 
 
 Exp_page.belongsTo(Home_page, {constraints:true, onDelete: 'CASCADE'});
-Home_page.hasMany(Exp_page);
+Home_page.hasMany(Exp_page);  // user with multiple expenses// one to many
+
+Home_page.hasMany(Order);
+Order.belongsTo(Home_page);
 
 app.use(adminRoutes);
 
 app.use(detailRoutes);
+
+app.use(purchaseRoutes);
 
 app.use(errorController.get404);  
 
