@@ -14,6 +14,6 @@ const router = express.Router();
 
 router.get('/premiummembership', userauthentication.authentication, purchaseController.purchasepremimum);
 
-// router.post('/updatetransactionstatus', userauthentication.getId, expenseController.postIndex);
+router.post('/updatetransactionstatus', userauthentication.authentication, purchaseController.updateTransactionStatus);
 
 module.exports = router;

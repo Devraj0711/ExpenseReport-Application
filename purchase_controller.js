@@ -6,6 +6,8 @@ const bcrypt= require('bcrypt');
 
 const jwt= require('jsonwebtoken');
 
+const userController=  require('../Expense_controllers/admin_controllers');
+
 const Order =require('../models/order');
 
 const RazorPay =require('razorpay');
@@ -41,5 +43,37 @@ exports.purchasepremimum= async(req, res)=> {
     } catch (err) {
         console.error(err);
         res.status(403).json({ message: 'Something went wrong', error: err });
+    }
+}
+
+var passPaymentId=" ";
+
+exports.updateTransactionStatus= (req,res)=>{
+    try{
+        const {payment_id, order_id}= req.body;
+        Order.findOne({where: {orderid: order_id }}).then(order=> {
+
+            
+            order.update({payementid: payment_id, status: 'SUCCESSFUL'}).then(()=>
+            {
+                req.user.update({ispremiumuser: true}).then(()=>{
+                    // Home_page.findOne({where: {id : order.ExpenseReportId}}).then(user =>
+                    //     {
+
+                    //     })
+                     //to pass payment id to frontend
+                    return res.status(202).json({success: true, message: "Transaction Successful",  token: userController.generateAccessToken(order.ExpenseReportId, true) });
+                }).catch((err)=>{
+                    throw new Error(err);
+                })
+            }).catch((err)=>{
+                throw new Error(err);
+            })
+        }).catch((err)=>{
+            throw new Error(err);
+        })
+    }
+    catch(err){
+        throw new Error(err);
     }
 }
