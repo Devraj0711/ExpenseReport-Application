@@ -31,7 +31,11 @@
     </form>
 
     <!-- attaching a paytem portal to the application -->
+    <div id="msg"></div>
     <button id="rzp-button1">Buy Premimum</button>
+
+    <div id="leaderboard"></div>
+
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     
         <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.4.1/axios.min.js"
@@ -39,132 +43,243 @@
             crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     
         <script>
-            document.addEventListener('DOMContentLoaded', () => {
 
-            
-            const myExpense = document.querySelector('#myExpense');
-            const listOfExpenses = document.getElementById('listOfExpenses');
-            const errorMessageElement = document.getElementById('error-message');
-            const token= localStorage.getItem('token');  
-             
-            
-            
-            
-            // creating a response when the screen is reloaded.
-            var expensesData = <%- expense %>;
-            // var ans_value= <%- ansValue %>;
-            console.log("------" , expensesData);
+                    function parseJwt (token) {
+                    var base64Url = token.split('.')[1];
+                    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+                    return JSON.parse(jsonPayload);
+                }
 
-            console.log("tokkkkk  ", token);
-            if(expensesData.length>0)
-            {
-            expensesData.forEach(expense => {
+                //function to show leaderboard
+                function showLeaderboard() {
+    const inputElement = document.createElement("input");
+    inputElement.type = "button";
+    inputElement.value = "Show Leaderboard";
+    inputElement.onclick = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get('http://localhost:2000/premium/showleaderboard', {
+                headers: { "Authorization": token }
+            });
+
+            const userLeaderBoardArray = response.data;
+
+            console.log('userLeaderBoardArray:', userLeaderBoardArray);
+
+            var leaderboardElem = document.getElementById('leaderboard');
+            leaderboardElem.innerHTML += '<h1>Leader Board </h1>';
+
+            if (userLeaderBoardArray && Object.keys(userLeaderBoardArray).length > 0) {
+                if (Array.isArray(userLeaderBoardArray)) {
+                    userLeaderBoardArray.forEach((userDetails) => {
+                        leaderboardElem.innerHTML += `<li>Name- ${userDetails.Username} Total Expense - ${userDetails.total_cost} `;
+                    });
+                } else {
+                    leaderboardElem.innerHTML += 'No valid leaderboard data available.';
+                }
+            } else {
+                leaderboardElem.innerHTML += 'No valid leaderboard data available.';
+            }
+        } catch (error) {
+            console.error('Error fetching leaderboard data:', error);
+        }
+    };
+
+    document.getElementById("msg").appendChild(inputElement);
+}
+
+
+
+                // function showLeaderboard()
+                // {
+                //     const inputElement= document.createElement("input")
+                //     inputElement.type= "button"
+                //     inputElement.value= "Show Leaderboard"
+                //     inputElement.onclick = async() =>{
+                //         const token=localStorage.getItem('token')
+                //         const userLeaderBoardArray = await axios.get('http://localhost:2000/premium/showleaderboard',{
+                //                 headers: { "Authorization": token }
+                //         })
+                //         console.log(userLeaderBoardArray)
+
+                //         var leaderboardElem = document.getElementById('leaderboard')
+                //         leaderboardElem.innerHTML+='<h1>Leader Board </h1>'
+                //         userLeaderBoardArray.data.forEach((userDetails)=>{
+                //             leaderboardElem.innerHTML+= `<li>Name- ${userDetails.name} Total Expense - ${userDetails.total_cost} `
+                //         })
+                //     }
+                //     document.getElementById("msg").appendChild(inputElement);
+                // }    
+
+                function showPremiumuser(){
+                    // const premiumButton = document.getElementById('rzp-button1');
+                    // if (premiumButton) {
+                    //     premiumButton.parentNode.removeChild(premiumButton);
+                    // }
+                    document.getElementById('rzp-button1').style.visibility ="hidden";
+                    document.getElementById('msg').innerHTML="You are a Premium User";
+                    
+                    // document.body.innerHTML += 'You are a Premium Member';
+                }        
+            
+
+                // start of DOMConetend function    
+                document.addEventListener('DOMContentLoaded', () => {
+            
                 
-                const childElement1 = document.createElement('li');
-                childElement1.textContent = expense.Amount + ' - ' + expense.description + ' - ' + expense.Category;
-                const deleteButton = document.createElement('button');
-                deleteButton.className = 'btn btn-danger btn-sm float-right delete';
-                deleteButton.appendChild(document.createTextNode('Delete Expense'));
-                const editButton = document.createElement('button');
-                editButton.className = 'btn btn-primary btn-sm float-right edit';
-                editButton.appendChild(document.createTextNode('Edit'));
-                childElement1.appendChild(editButton);
-                childElement1.appendChild(deleteButton);
-                listOfExpenses.appendChild(childElement1);
-            })
-        } //end of if statement
-
-
-            myExpense.addEventListener('submit', onSubmit);
             
-            //start of onsubmit function which will be called when the Add button is clicked
-            function onSubmit(event) {
-                event.preventDefault();
+                const myExpense = document.querySelector('#myExpense');
+                const listOfExpenses = document.getElementById('listOfExpenses');
+                const errorMessageElement = document.getElementById('error-message');
+                const token= localStorage.getItem('token');  
+            
+                const decodeToken= parseJwt(token)
+                const ispremiumuser= decodeToken.ispremiumuser;
+                if(ispremiumuser)
+                {
+                    showPremiumuser();
+                    showLeaderboard()
+                } 
+            
+                
+           
+                // creating a response when the screen is reloaded.
+                var expensesData = <%- expense %>;
+            
+                console.log("------" , expensesData);
 
-                const expenseDetails = {
-                    Amount: document.getElementById('Amount').value,
-                    description: document.getElementById('description').value,
-                    Category: document.getElementById('Category').value
-                };
-                const token= localStorage.getItem('token'); 
-                console.log(token);
-                const config = {
-                    headers: {
-                          'Authorization': `Bearer ${token}`// Include the token in the Authorization header
-                            }
-                        };
-                console.log(config);
+                console.log("tokkkkk  ", token);
+                if(expensesData.length>0)
+                {
+                    expensesData.forEach(expense => {
+                
+                    if(expense.ExpenseReportId== decodeToken.ExpenseReportId)
+                    {
+                
+                        const childElement1 = document.createElement('li');
+                        childElement1.textContent = expense.Amount + ' - ' + expense.description + ' - ' + expense.Category;
+                        const deleteButton = document.createElement('button');
+                        deleteButton.className = 'btn btn-danger btn-sm float-right delete';
+                        deleteButton.appendChild(document.createTextNode('Delete Expense'));
+                        const editButton = document.createElement('button');
+                        editButton.className = 'btn btn-primary btn-sm float-right edit';
+                        editButton.appendChild(document.createTextNode('Edit'));
+                        childElement1.appendChild(editButton);
+                        childElement1.appendChild(deleteButton);
+                        listOfExpenses.appendChild(childElement1);
+                    }
+                })
+                } //end of if statement
 
-                //post call to the server returning 200 success
-                axios.post('http://localhost:2000/Expense/details', expenseDetails, config)
-                    .then(response => {
-                        if (response.data.success) {
-                            console.log(response.data.expense);
-                            showOnScreen(response.data.expense);
-                        } else {
+
+                myExpense.addEventListener('submit', onSubmit);
+            
+                //start of onsubmit function which will be called when the Add button is clicked
+                function onSubmit(event) {
+                    event.preventDefault();
+
+                    const expenseDetails = {
+                        Amount: document.getElementById('Amount').value,
+                        description: document.getElementById('description').value,
+                        Category: document.getElementById('Category').value
+                    };
+                    const token= localStorage.getItem('token'); 
+                    console.log(token);
+                    const config = {
+                        headers: {
+                            'Authorization': `Bearer ${token}`// Include the token in the Authorization header
+                                 }
+                            };
+                    console.log(config);
+
+                    //post call to the server returning 200 success
+                    axios.post('http://localhost:2000/Expense/details', expenseDetails, config)
+                        .then(response => {
+                            if (response.data.success) 
+                            {
+                                console.log(response.data.expense);
+                                showOnScreen(response.data.expense);
+                            } 
+                            else 
+                            {
                             console.error('Error fetching data: ', response.data.error);
                             showError(response.data.error);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        showError(error);
-                    });
-            }
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            showError(error);
+                        });
+                }
 
-            // function to show the values as list on the screen
-            function showOnScreen(myobj) {
-                console.log('Received data from server:', myobj);
-                const childElement = document.createElement('li');
-                childElement.textContent = myobj.Amount + ' - ' + myobj.description + ' - ' + myobj.Category;
-                const deleteButton = document.createElement('button');
-                deleteButton.className = 'btn btn-danger btn-sm float-right delete';
-                deleteButton.appendChild(document.createTextNode('Delete Expense'));
-                const editButton = document.createElement('button');
-                editButton.className = 'btn btn-primary btn-sm float-right edit';
-                editButton.appendChild(document.createTextNode('Edit'));
-                childElement.appendChild(editButton);
-                childElement.appendChild(deleteButton);
-                listOfExpenses.appendChild(childElement);
+
+                // function to show the values as list on the screen
+                function showOnScreen(myobj) {
+                    console.log('Received data from server:', myobj);
+                    const childElement = document.createElement('li');
+                    childElement.textContent = myobj.Amount + ' - ' + myobj.description + ' - ' + myobj.Category;
+                    const deleteButton = document.createElement('button');
+                    deleteButton.className = 'btn btn-danger btn-sm float-right delete';
+                    deleteButton.appendChild(document.createTextNode('Delete Expense'));
+                    const editButton = document.createElement('button');
+                    editButton.className = 'btn btn-primary btn-sm float-right edit';
+                    editButton.appendChild(document.createTextNode('Edit'));
+                    childElement.appendChild(editButton);
+                    childElement.appendChild(deleteButton);
+                    listOfExpenses.appendChild(childElement);
 
                 
-            }
+                }
 
 
-            // function used to show error on the screen
-            function showError(error)
-                {
+
+                // function used to show error on the screen
+                function showError(error)
+                    {
                     // Assuming there's an element with ID 'error-message' in HTML
-                    const errorMessageElement = document.getElementById('error-message');
-                    try {
-                        const errorMessage = JSON.parse(error.response.data.error);
-                        if (errorMessageElement) {
+                        const errorMessageElement = document.getElementById('error-message');
+                        try {
+                            const errorMessage = JSON.parse(error.response.data.error);
+                            if (errorMessageElement) 
+                            {
                             errorMessageElement.textContent = `An error occurred: ${errorMessage.message}`;
-                        } 
-                        else {
-                            // If there's no specific element to display the error, log it to the console
-                            console.error('An error occurred:', errorMessage.message);
-                        }
+                            } 
+                            else 
+                            {
+                                // If there's no specific element to display the error, log it to the console
+                                console.error('An error occurred:', errorMessage.message);
+                            }
                         }
                         catch (parseError) {
                             // If parsing the error JSON fails, display the original error response text
-                            if (errorMessageElement) {
+                            if (errorMessageElement)
+                            {
                                 errorMessageElement.textContent = `An error occurred: ${error.response.data}`;
                             }
-                            else {
+                            else 
+                            {
                                 console.error('An error occurred:', error.response.data);
                             }
                         }
-                }
+                    }
+                
+               
+                
+
+              
 
                 //function for razorpay
                 document.getElementById('rzp-button1').onclick = async function (e) {
-                    const token = localStorage.getItem('token');
-                    try {
-                        const response = await axios.get('http://localhost:2000/premiummembership', {
-                            headers: { "Authorization": token }
+                        const token = localStorage.getItem('token');
+                    
+                        try {
+                            const response = await axios.get('http://localhost:2000/premiummembership', {
+                                headers: { "Authorization": token }
                             
-                        });
+                            });
                         
                         const options = {
                             "key": response.data.key_id,
@@ -177,26 +292,24 @@
                                 }, {
                                     headers: { "Authorization": token }
                                 });
-                                if (paymentResponse.data.success) {
+                                if (paymentResponse.data.success) 
+                                {
                                     
                                     alert('You are a Premium Member');
 
                                     //to remove the premimum button 
-                                    localStorage.setItem('token', paymentResponse.data.token )
-
-                                    const premiumButton = document.getElementById('rzp-button1');
-                                    if (premiumButton) {
-                                        premiumButton.parentNode.removeChild(premiumButton);
-                                    }
-
-                                    document.body.innerHTML += '<div style="color:black;">You are a Premium Member </div>';
-                                    // Perform additional actions if payment was successful
+                                    localStorage.setItem('token', paymentResponse.data.token);
+                                    
+                                    showPremiumuser()
+                                    showLeaderboard()
+                                       // Perform additional actions if payment was successful
                                 }
                                 else {
                                     console.error('Payment failed:', paymentResponse.data.error);
                                     // Handle payment failure scenario
                                 }
-                            } 
+                            } // end of try
+
                             catch (error) {
                                     console.error('Error updating transaction status:', error);
                                    // Handle error updating transaction status
@@ -207,40 +320,23 @@
                         const razorpay = new Razorpay(options);
                         razorpay.on('payment.success', options.handler);
                         razorpay.on('payment.error', function (response) {
-                        console.error(response.error.description);
+                            console.error(response.error.description);
                         // Handle payment failure here
-                     });
+                        });
                      razorpay.open();
                     }
                     catch (error) {
                         console.error('Error fetching RazorPay details:', error);
                         // Handle error fetching RazorPay details
                         }
-                    };
+                    }
 
-                // document.getElementById('rzp-button1').onclick = async function (e)
-                // {
-                    
-                //     const token= localStorage.getItem('token')
-                //     const response = await axios.get ('http://localhost:2000/premiummembership', {headers: {"Authorization": token}});
-                //     console.log(response);
-                //     var options= 
-                //     {
-                //         "key": response.data.key_id, //key Id generated
-                //         "order_id": response.data.order.id, //for one time payement
-                //         "handler" : async function(response)
-                //         {
-                //             await axios.post('http://localhost:2000/updatetransactionstatus', {
-                //                 order_id: options.order_id,
-                //                 payment_id: response.razorpay_payment_id,
-                //             }, {headers: {"Authorization": token}})
-                //         alert('You are a Premium Member');    
-                //         },
-                //     };
-                // }
+                
 
-            
-            });  //  end of document add listener function
+                
+
+            });//start of DOMConetend function 
+                
 
      </script>
 

@@ -27,6 +27,8 @@ const detailRoutes= require('./Expense_routes/expense_route');
 
 const purchaseRoutes= require('./Expense_routes/purchase_routes');
 
+const premiumRoutes= require('./Expense_routes/premium_route')
+
 const Home_page= require('./models/db_model'); // expenseReports
 const Exp_page= require('./models/ExpenseDB'); //details
 const Order=  require('./models/order');
@@ -44,6 +46,8 @@ app.use(adminRoutes);
 app.use(detailRoutes);
 
 app.use(purchaseRoutes);
+
+app.use(premiumRoutes);
 
 app.use(errorController.get404);  
 
