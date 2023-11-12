@@ -3,6 +3,8 @@ const Exp_page = require('../models/ExpenseDB'); // Adjust the path based on you
 
 const token_ans= require('../Expense_controllers/admin_controllers'); // for export ans
 
+const sequelize = require('../util/database');
+
 const jwt=require('jsonwebtoken');
 
 const path = require('path');
@@ -36,62 +38,118 @@ exports.getIndex=(req, res, next) => {
 }
 
 
-exports.postIndex = (req, res, next) => {
-  const { Amount, description, Category } = req.body;
-  const token = req.headers.authorization;
+exports.postIndex = async (req, res, next) => {
+  const t = await sequelize.transaction();
 
-  if (!token) {
-    return res.status(401).json({ error: 'Unauthorized', success: false });
-  }
+  try {
+    const { Amount, description, Category } = req.body;
+    const token = req.headers.authorization;
 
-  // Verify the token
-  jwt.verify(token.replace('Bearer ', ''), 'dvysis23', (err, decodedToken) => {
-    if (err) {
-      console.error('Error decoding token: ', err);
+    if (!token) {
       return res.status(401).json({ error: 'Unauthorized', success: false });
     }
 
-    
-  // console.log("sddv   ", req.headers.authorization)
-  // // Verify the token
-  // jwt.verify(req.body.token, 'dvysis23', (err, decodedToken) => {
-  //   if (err) {
-  //     console.error('Error decoding token: ', err);
-  //     return res.status(401).json({ error: 'Unauthorized', success: false });
-  //   }
-  const ExpenseReportIdId  = decodedToken.ExpenseReportId;
+    // Verify the token
+    const decodedToken = jwt.verify(token.replace('Bearer ', ''), 'dvysis23');
 
-  console.log("decoded ----", ExpenseReportIdId);
+    const ExpenseReportIdId = decodedToken.ExpenseReportId;
 
-  Exp_page.create({
-    Amount: Amount,
-    description: description,
-    Category: Category,
-    ExpenseReportId: ExpenseReportIdId
-  })
-  .then(expenses => {
+    console.log("decoded ----", ExpenseReportIdId);
 
-    //adding  total expense of a user in the totalExpenses column
-    Home_page.findOne({where: {id: expenses.ExpenseReportId}}).then(user=> {
-    
-    const totalExpense =Number(user.totalExpenses)+ Number(expenses.Amount);
-    Home_page.update({
-      totalExpenses: totalExpense
-    }, {
-      where: {id: expenses.ExpenseReportId}
-    })
-    console.log("Let see the total Expenses  ", totalExpense);
-    }).catch((err)=>{
-      throw new Error(err);
-  })
+    const expenses = await Exp_page.create({
+      Amount: Amount,
+      description: description,
+      Category: Category,
+      ExpenseReportId: ExpenseReportIdId
+    });
 
-  
+    // Adding total expense of a user in the totalExpenses column
+    const user = await Home_page.findOne({ where: { id: expenses.ExpenseReportId } });
+
+    const totalExpense = Number(user.totalExpenses) + Number(expenses.Amount);
+
+    await Home_page.update(
+      { totalExpenses: totalExpense },
+      {
+        where: { id: expenses.ExpenseReportId },
+        transaction: t
+      }
+    );
+
+    await t.commit();
+
     console.log(expenses);
+    console.log("Let's see the total Expenses: ", totalExpense);
     return res.status(201).json({ expense: expenses, success: true });
-  })
-  .catch(err => {
+  } catch (err) {
     console.error('Error inserting data: ', err);
+
+    try {
+      await t.rollback();
+    } catch (rollbackErr) {
+      console.error('Error rolling back transaction: ', rollbackErr);
+    }
+
     return res.status(500).json({ error: 'Internal Server Error', success: false });
-  })
-});
+  }
 };
+
+
+// exports.postIndex = async(req, res, next) => {
+//   const t= await sequelize.transaction()
+//   const { Amount, description, Category } = req.body;
+//   const token = req.headers.authorization;
+
+//   if (!token) {
+//     return res.status(401).json({ error: 'Unauthorized', success: false });
+//   }
+
+//   // Verify the token
+//   jwt.verify(token.replace('Bearer ', ''), 'dvysis23', (err, decodedToken) => {
+//     if (err) {
+//       console.error('Error decoding token: ', err);
+//       return res.status(401).json({ error: 'Unauthorized', success: false });
+//     }
+
+//   const ExpenseReportIdId  = decodedToken.ExpenseReportId;
+
+//   console.log("decoded ----", ExpenseReportIdId);
+
+//   Exp_page.create({
+//     Amount: Amount,
+//     description: description,
+//     Category: Category,
+//     ExpenseReportId: ExpenseReportIdId
+//   })
+//   .then(expenses => {
+
+//     //adding  total expense of a user in the totalExpenses column
+//     Home_page.findOne({where: {id: expenses.ExpenseReportId}}).then(user=> {
+    
+//     const totalExpense =Number(user.totalExpenses)+ Number(expenses.Amount);
+//     Home_page.update({
+//       totalExpenses: totalExpense
+//     }, {
+//       where: {id: expenses.ExpenseReportId},
+//       transaction: t
+//     }).then(async()=>{
+//       await t.commit();
+//       console.log(expenses);
+//       console.log("Let see the total Expenses  ", totalExpense);
+//       return res.status(201).json({ expense: expenses, success: true });
+//     })
+//     .catch(async(err)=>{
+//       await t.rollback();
+//       throw new Error(err);
+//   })
+// })
+//   .catch(err => {
+//     console.error('Error inserting data: ', err);
+//     return res.status(500).json({ error: 'Internal Server Error', success: false });
+//   })
+// })
+// .catch(err => {
+//   console.error('Error inserting data: ', err);
+//   })
+// })
+// }

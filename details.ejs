@@ -55,41 +55,44 @@
 
                 //function to show leaderboard
                 function showLeaderboard() {
-    const inputElement = document.createElement("input");
-    inputElement.type = "button";
-    inputElement.value = "Show Leaderboard";
-    inputElement.onclick = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:2000/premium/showleaderboard', {
-                headers: { "Authorization": token }
-            });
-
-            const userLeaderBoardArray = response.data;
-
-            console.log('userLeaderBoardArray:', userLeaderBoardArray);
-
-            var leaderboardElem = document.getElementById('leaderboard');
-            leaderboardElem.innerHTML += '<h1>Leader Board </h1>';
-
-            if (userLeaderBoardArray && Object.keys(userLeaderBoardArray).length > 0) {
-                if (Array.isArray(userLeaderBoardArray)) {
-                    userLeaderBoardArray.forEach((userDetails) => {
-                        leaderboardElem.innerHTML += `<li>Name- ${userDetails.Username} Total Expense - ${userDetails.total_cost} `;
+                    const inputElement = document.createElement("input");
+                    inputElement.type = "button";
+                    inputElement.value = "Show Leaderboard";
+                    inputElement.onclick = async () => {
+                    try {
+                        const token = localStorage.getItem('token');
+                        const response = await axios.get('http://localhost:2000/premium/showleaderboard', {
+                        headers: { "Authorization": token }
                     });
-                } else {
-                    leaderboardElem.innerHTML += 'No valid leaderboard data available.';
-                }
-            } else {
-                leaderboardElem.innerHTML += 'No valid leaderboard data available.';
-            }
-        } catch (error) {
-            console.error('Error fetching leaderboard data:', error);
-        }
-    };
 
-    document.getElementById("msg").appendChild(inputElement);
-}
+                    const userLeaderBoardArray = response.data;
+
+                    console.log('userLeaderBoardArray:', userLeaderBoardArray);
+
+                    var leaderboardElem = document.getElementById('leaderboard');
+                    leaderboardElem.innerHTML += '<h1>Leader Board </h1>';
+
+                    if (userLeaderBoardArray && Object.keys(userLeaderBoardArray).length > 0) {
+                        if (Array.isArray(userLeaderBoardArray)) {
+                            userLeaderBoardArray.forEach((userDetails) => {
+                                leaderboardElem.innerHTML += `<li>Name- ${userDetails.Username} Total Expense - ${userDetails.totalExpenses} `;
+                            });
+                        } 
+                        else {
+                            leaderboardElem.innerHTML += 'No valid leaderboard data available.';
+                         }
+                    } 
+                    else {
+                        leaderboardElem.innerHTML += 'No valid leaderboard data available.';
+                    }
+                    } 
+                    catch (error) {
+                        console.error('Error fetching leaderboard data:', error);
+                    }
+                };
+
+                document.getElementById("msg").appendChild(inputElement);
+            }
 
 
 
