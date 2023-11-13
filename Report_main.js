@@ -11,6 +11,9 @@ const sequelize =require('./util/database');
 
 const app = express();
 
+// get config vars
+require('dotenv').config();
+
 app.use(cors());
 
 app.use(express.json()); // Parse JSON-encoded bodies
@@ -27,12 +30,14 @@ const detailRoutes= require('./Expense_routes/expense_route');
 
 const purchaseRoutes= require('./Expense_routes/purchase_routes');
 
-const premiumRoutes= require('./Expense_routes/premium_route')
+const premiumRoutes= require('./Expense_routes/premium_route');
+
+const resetPasswordRoutes = require('./Expense_routes/resetPassword_routes')
 
 const Home_page= require('./models/db_model'); // expenseReports
 const Exp_page= require('./models/ExpenseDB'); //details
 const Order=  require('./models/order');
-
+const Forgotpassword = require('./models/resetPassword_db');
 
 
 Exp_page.belongsTo(Home_page, {constraints:true, onDelete: 'CASCADE'});
@@ -41,6 +46,9 @@ Home_page.hasMany(Exp_page);  // user with multiple expenses// one to many
 Home_page.hasMany(Order);
 Order.belongsTo(Home_page);
 
+Home_page.hasMany(Forgotpassword);
+Forgotpassword.belongsTo(Home_page);
+
 app.use(adminRoutes);
 
 app.use(detailRoutes);
@@ -48,6 +56,8 @@ app.use(detailRoutes);
 app.use(purchaseRoutes);
 
 app.use(premiumRoutes);
+
+app.use(resetPasswordRoutes);
 
 app.use(errorController.get404);  
 

@@ -21,22 +21,7 @@
 </head>
 
 <body>
-    <!-- <div class="included-content">
-        <object type="text/html" data="../includes/head.html"></object>
-    </div>
-
-    <div class="included-content">
-        <iframe src="../includes/navigation.html" width="100%" height="500px"></iframe>
-         <object type="text/html" data="../includes/navigation.html"></object> -->
-    <!-- </div>
-
-    <main>
-        Main content goes here -->
-    <!-- </main>
-
-    <div class="included-content">
-        <object type="text/html" data="../includes/end.html"></object>
-    </div> -->
+   
     <main>
     <form class="expense-form" id="loginForm"  onsubmit="handleLoginFormSubmission(event)">
     <div class="sigin">
@@ -49,6 +34,13 @@
 
     </div>
      </form>
+
+     <!-- <form class="forget-password" onclick="forgotpassword()">
+        <br></br>
+        <button class="btn" type="submit" id="forgetPassword">Forget Password</button>
+     </form>  -->
+
+     <button class="btn" onclick="forgotpassword()">Forget Password</button>
      
      <form class="expense-signup" action="/" id="signinForm" method="GET">
         <br></br>
@@ -81,7 +73,9 @@
                .then(response => {
                 if(response.status === 200)
                 {
+                    localStorage.setItem('token', response.data.token )
                     alert(response.data.message)
+                    window.location.href = 'http://localhost:2000/Expense/details';
                 }
                 
                })
@@ -91,7 +85,11 @@
                 document.body.innerHTML += '<div style="color:red;">' + error.data.message + '</div>';
    
                })
-            }; //end of function
+            };
+            
+            function forgotpassword() {
+                window.location.href = "http://localhost:2000/password/forgetPassword"
+            } //end of function
 
      </script>
 
@@ -100,34 +98,3 @@
 </html>
 
 
-<!-- //             document.getElementById("loginForm").addEventListener("submit", function(event) {
-    //     event.preventDefault();
-    //     const formData = new FormData(this);
-    //     const Username = formData.get("Username");
-    //     const Password = formData.get("Password");
-    
-    //     // Make an AJAX request to the server
-    //     fetch("/Home/signin", {
-    //         method: "POST",
-    //         body: JSON.stringify({ Username, Password }),
-    //         headers: {
-    //             "Content-Type": "application/json"
-    //         }
-    //     })
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         if (data.success) {
-    //             // Login successful, display success message
-    //             alert("Login successful: " + data.message);
-    //             // You can redirect the user to another page or perform other actions here
-    //         } else {
-    //             // Login failed, display error message
-    //             alert("Login failed: " + data.error);
-    //         }
-    //     })
-    //     .catch(error => {
-    //         // Handle network errors or other issues
-    //         console.error("Error:", error);
-    //         alert("An error occurred while processing your request. Please try again later.");
-    //     });
-    // }); -->
