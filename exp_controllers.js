@@ -97,8 +97,8 @@ exports.postIndex = async (req, res, next) => {
 
 function uploadToS3(data, filename){
   const BUCKET_NAME = 'expensetracker201077';
-  const IAM_USER_KEY = 'AKIAVWJNUYL7YMME3TY4';
-  const IAM_USER_SECRET = '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';
+  const IAM_USER_KEY = ''; //left empty for security purpose
+  const IAM_USER_SECRET = ''; //left empty for security purpose
 
   let s3bucket = new AWS.S3({
     accessKeyId: IAM_USER_KEY,
